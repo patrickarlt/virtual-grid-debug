@@ -46,7 +46,7 @@
 
   var map = new L.Map('map', {
     crs: crs
-  }).setView([40.381, -111.859], 5);
+  }).setView([40.381, -111.859], 2);
 
   L.tileLayer('http://mapserv.utah.gov/arcgis/rest/services/BaseMaps/Terrain/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 14,
@@ -109,14 +109,17 @@
       var bounds = this._tileCoordsToBounds(coords);
 
       L.rectangle(bounds, {
-        color: 'red'
-      });
+        color: '#C22B18',
+        weight: 2,
+        opacity: 0.5,
+        fillOpacity: 0.25
+      }).addTo(map);
 
       return L.DomUtil.create('div');
     }
   });
 
-  var grid = new MyGrid().addTo(map);
+  var grid = new DebugGridLayer().addTo(map);
 </script>
 
 </body>
