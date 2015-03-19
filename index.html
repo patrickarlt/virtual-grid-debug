@@ -1,0 +1,125 @@
+<html>
+<head>
+  <meta charset=utf-8 />
+  <title>Non-mercator projection</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+  <!-- Load Leaflet from CDN-->
+  <link rel="stylesheet" href="leaflet-master/leaflet.css" />
+  <script src="leaflet-master/leaflet-src.js"></script>
+  <script src="virtual-grid.js"></script>
+
+  <style>
+    body {margin:0;padding:0;}
+    #map {position: absolute;top:0;bottom:0;right:0;left:0;}
+  </style>
+</head>
+<body>
+
+<script src="proj4leaflet/proj4-src.js"></script>
+<script src="proj4leaflet/proj4leaflet-src.js"></script>
+
+<div id="map"></div>
+
+<script>
+  /*
+    create new Proj4Leaflet CRS:
+    1. Proj4 and WKT definitions can be found at sites like http://epsg.io
+    2. appropriate values to supply to the resolution and origin constructor options can be found in the ArcGIS Server RESTful tile server endpoint (ex: http://mapserv.utah.gov/arcgis/rest/services/BaseMaps/Terrain/MapServer)
+  */
+  var crs = new L.Proj.CRS('EPSG:26912', '+proj=utm +zone=12 +ellps=GRS80 +datum=NAD83 +units=m +no_defs', {
+    origin: [-5120900, 9998100],
+    resolutions: [
+      4891.96999883583,
+      2445.98499994708,
+      1222.99250010583,
+      611.496250052917,
+      305.748124894166,
+      152.8740625,
+      76.4370312632292,
+      38.2185156316146,
+      19.1092578131615,
+      9.55462890525781,
+      4.77731445262891,
+      2.38865722657904,
+      1.19432861315723,
+      0.597164306578613,
+      0.298582153289307
+    ]
+  });
+
+  var map = new L.Map('map', {
+    crs: crs
+  }).setView([40.381, -111.859], 5);
+
+  /*
+    The min/maxZoom values provided should match the actual cache thats been published. This information can be retrieved from the service endpoint directly.
+  */
+  L.tileLayer('http://mapserv.utah.gov/arcgis/rest/services/BaseMaps/Terrain/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 14,
+    minZoom: 0,
+    continuousWorld: true,
+    attribution: 'State of Utah'
+  }).addTo(map);
+
+  var rects = {};
+
+  function coordsToKey(coords){
+    return coords.x + ':' + coords.y + ':' +coords.z;
+  }
+
+  var grid = L.virtualGrid({
+    cellSize: 512
+  });
+
+  // when new cells come into view...
+  grid.on("newcells", function(e) {
+    console.log(e);
+    for (var i = 0; i < e.cells.length; i++) {
+    L.rectangle(e.cells[i].bounds).addTo(map);
+    };
+
+  });
+
+  grid.addTo(map);
+
+// var utah = "+proj=utm +zone=12 +ellps=GRS80 +datum=NAD83 +units=m +no_defs";
+// var wgs84 = "+proj=longlat +datum=WGS84 +no_defs ";
+
+// var proj = proj4(utah, wgs84);
+
+//   var MyGrid = L.GridLayer.extend({
+//     createTile: function(coords){
+
+//       var map = this._map,
+//           tileSize = this._getTileSize(),
+
+//           nwPoint = coords.multiplyBy(tileSize),
+//           sePoint = nwPoint.add([tileSize, tileSize]);
+
+//           nw = map.wrapLatLng(map.unproject(nwPoint)),
+//           se = map.wrapLatLng(map.unproject(sePoint));
+//           console.log(nwPoint, sePoint);
+//       return L.DomUtil.create('div');
+//     },
+
+//     // converts tile coordinates to its geographical bounds
+//     _tileCoordsToBounds: function (coords) {
+
+//       var map = this._map,
+//           tileSize = this._getTileSize(),
+
+//           nwPoint = coords.multiplyBy(tileSize),
+//           sePoint = nwPoint.add([tileSize, tileSize]);
+
+//           nw = map.wrapLatLng(map.unproject(nwPoint)),
+//           se = map.wrapLatLng(map.unproject(sePoint));
+//       return new L.LatLngBounds(nw, se);
+//     },
+//   });
+
+//   var grid = new MyGrid().addTo(map);
+</script>
+
+</body>
+</html>
